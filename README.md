@@ -2,7 +2,7 @@
 
 A modern, full-stack travel blogging platform where users can share their global adventures, discover new destinations, and manage their personal travel journals. Built with a robust Node.js + Express backend and a responsive, high-performance HTML/CSS/JS frontend. This project integrates a modular monolithic architecture and secure authentication.
 
-##Features
+## Features
 
 🌍 Interactive Blog Feed: Explore travel stories from around the world.
 🔐 Secure Authentication: JWT-based user sessions and bcrypt password encryption.
