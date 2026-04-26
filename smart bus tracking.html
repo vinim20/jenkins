@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Smart Bus Tracking</title>
+</head>
+
+<body>
+
+<h2>Smart Bus Tracking System</h2>
+
+<button onclick="getETA()">Check ETA</button>
+
+<p id="result"></p>
+
+<script>
+
+function getETA(){
+
+fetch('http://127.0.0.1:5000/get-eta/BUS101/STOP3')
+
+.then(response => response.json())
+
+.then(data => {
+
+document.getElementById("result").innerHTML =
+"Bus : " + data.bus_id +
+"<br>Current Stop : " + data.current_stop +
+"<br>Next Stop : " + data.next_stop +
+"<br>ETA : " + data.eta_minutes + " minutes";
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
