@@ -59,4 +59,8 @@ td { padding: 15px 0; font-size: 0.85rem; border-bottom: 1px solid var(--border)
 
 .bus-specs { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; }
 .bus-specs li { font-size: 0.75rem; color: var(--text-main); background: #21262d; padding: 5px 12px; border-radius: 5px; }
+<<<<<<< HEAD
 .bus-specs li i { color: var(--neon-blue); margin-right: 5px; }
+=======
+.bus-specs li i { color: var(--neon-blue); margin-right: 5px; }
+>>>>>>> bccc8b7ef6510e0f8cad0150e4d45e9151169ac4
