@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Log | Bus Search Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #05070a;
+            --card-bg: #0d1117;
+            --neon-blue: #00d2ff;
+            --text-main: #ffffff;
+            --text-dim: #8b949e;
+            --border: #21262d;
+            --success: #238636;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; scroll-behavior: smooth; }
+
+        .glow-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 210, 255, 0.05) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        nav { display: flex; justify-content: space-between; padding: 30px 10%; align-items: center; background: rgba(5, 7, 10, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
+        .logo { font-weight: 800; letter-spacing: 2px; color: var(--neon-blue); font-size: 1.2rem; }
+        .nav-links a { color: var(--text-dim); text-decoration: none; margin-left: 30px; font-size: 0.9rem; transition: 0.3s; }
+        .nav-links a:hover { color: var(--neon-blue); }
+
+        .hero { text-align: center; padding: 80px 20px; }
+        h1 { font-size: 3.5rem; letter-spacing: -2px; margin-bottom: 10px; text-transform: uppercase; }
+
+        .section { padding: 40px 10%; }
+        .section-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 4px; color: var(--text-dim); margin-bottom: 25px; display: block; }
+
+        /* Dashboard & Search Styling */
+        .dashboard-container { background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border); padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        .search-group { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .search-container {
+            display: flex; align-items: center; background: #161b22;
+            border: 1px solid var(--border); border-radius: 10px; padding: 12px 20px; transition: 0.3s;
+        }
+        .search-container:focus-within { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+        .search-container input { background: transparent; border: none; color: white; width: 100%; outline: none; margin-left: 15px; font-size: 0.95rem; }
+
+        .history-log { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { color: var(--text-dim); font-size: 0.8rem; text-align: left; padding-bottom: 15px; border-bottom: 1px solid var(--border); text-transform: uppercase; }
+        td { padding: 20px 0; font-size: 0.9rem; border-bottom: 1px solid var(--border); }
+        
+        .route-cell { font-weight: 600; color: #fff; }
+        .status-tag { background: rgba(0, 210, 255, 0.1); color: var(--neon-blue); padding: 5px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+        .status-tag.available { background: rgba(35, 134, 54, 0.1); color: #3fb950; }
+
+        .book-btn {
+            background: var(--neon-blue); color: var(--bg-dark); border: none; padding: 8px 18px; 
+            border-radius: 6px; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 0.8rem;
+        }
+        .book-btn:hover { background: #fff; transform: scale(1.05); }
+
+        #noResults { text-align: center; padding: 40px; color: var(--text-dim); display: none; }
+
+        /* Bus Cards Styling */
+        .bus-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
+        .bus-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; transition: 0.3s; }
+        .bus-card:hover { border-color: var(--neon-blue); transform: translateY(-5px); }
+
+        .bus-image { height: 180px; background: #161b22; display: flex; align-items: center; justify-content: center; font-size: 4rem; color: #21262d; }
+        .bus-content { padding: 25px; }
+        .bus-content h3 { color: var(--neon-blue); margin-bottom: 10px; }
+        .bus-content p { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 20px; line-height: 1.6; }
+
+        .bus-specs { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+        .bus-specs li { font-size: 0.7rem; color: var(--text-main); background: #21262d; padding: 6px 12px; border-radius: 5px; }
+        .bus-specs li i { color: var(--neon-blue); margin-right: 5px; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .search-group { grid-template-columns: 1fr; }
+            .section { padding: 40px 5%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="glow-bg"></div>
+    
+    <nav>
+        <div class="logo">TRAVEL LOG.</div>
+        <div class="nav-links">
+            <a href="#dashboard">Find Buses</a>
+            <a href="#fleet">Our Fleet</a>
+            <a href="#">Support</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Bus Travel Portal</h1>
+            <p style="color: var(--text-dim)">Real-time availability and premium intercity fleet</p>
+        </div>
+    </header>
+
+    <!-- Search & Results Section -->
+    <section id="dashboard" class="section">
+        <span class="section-title">Bus Search</span>
+        <div class="dashboard-container">
+            <div class="search-group">
+                <div class="search-container">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <input type="text" id="sourceInput" placeholder="From: City or Station" onkeyup="searchBuses()">
+                </div>
+                <div class="search-container">
+                    <i class="fas fa-location-arrow"></i>
+                    <input type="text" id="destInput" placeholder="To: City or Station" onkeyup="searchBuses()">
+                </div>
+            </div>
+
+            <div class="history-log">
+                <table id="busTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Bus Type</th>
+                            <th>Route</th>
+                            <th>Availability</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="busBody">
+                        <tr>
+                            <td>May 10, 2026</td>
+                            <td>Volvo B11R Sleeper</td>
+                            <td class="route-cell">Madurai to Chennai</td>
+                            <td><span class="status-tag">12 Seats Left</span></td>
+                            <td><button class="book-btn">Book Now</button></td>
+                        </tr>
+                        <tr>
+                            <td>May 10, 2026</td>
+                            <td>Scania Multi-Axle</td>
+                            <td class="route-cell">Nagercoil to Bangalore</td>
+                            <td><span class="status-tag">5 Seats Left</span></td>
+                            <td><button class="book-btn">Book Now</button></td>
+                        </tr>
+                        <tr>
+                            <td>May 11, 2026</td>
+                            <td>Mercedes Benz Shuttl</td>
+                            <td class="route-cell">Chennai to Bangalore</td>
+                            <td><span class="status-tag available">Available</span></td>
+                            <td><button class="book-btn">Book Now</button></td>
+                        </tr>
+                        <tr>
+                            <td>May 12, 2026</td>
+                            <td>Intercity Express</td>
+                            <td class="route-cell">Coimbatore to Chennai</td>
+                            <td><span class="status-tag">8 Seats Left</span></td>
+                            <td><button class="book-btn">Book Now</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div id="noResults">
+                    <i class="fas fa-bus-alt" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                    <p>No buses matching your route were found.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fleet Details Section -->
+    <section id="fleet" class="section">
+        <span class="section-title">Bus Fleet Details</span>
+        <div class="bus-grid">
+            <div class="bus-card">
+                <div class="bus-image"><i class="fas fa-bus"></i></div>
+                <div class="bus-content">
+                    <h3>Premium Executive Sleeper</h3>
+                    <p>Designed for long-distance comfort with automated climate control and individual entertainment systems.</p>
+                    <ul class="bus-specs">
+                        <li><i class="fas fa-check"></i> Air Suspension</li>
+                        <li><i class="fas fa-check"></i> WiFi Enabled</li>
+                        <li><i class="fas fa-check"></i> GPS Tracking</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="bus-card">
+                <div class="bus-image"><i class="fas fa-shuttle-van"></i></div>
+                <div class="bus-content">
+                    <h3>Intercity Express</h3>
+                    <p>High-speed connectivity between major hubs with ergonomic seating and rapid boarding systems.</p>
+                    <ul class="bus-specs">
+                        <li><i class="fas fa-check"></i> Reclining Seats</li>
+                        <li><i class="fas fa-check"></i> Charging Ports</li>
+                        <li><i class="fas fa-check"></i> LED Lighting</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function searchBuses() {
+            const source = document.getElementById("sourceInput").value.toUpperCase();
+            const dest = document.getElementById("destInput").value.toUpperCase();
+            const table = document.getElementById("busTable");
+            const tr = table.getElementsByTagName("tr");
+            const noResults = document.getElementById("noResults");
+            let countVisible = 0;
+
+            for (let i = 1; i < tr.length; i++) {
+                const routeCell = tr[i].getElementsByClassName("route-cell")[0];
+                if (routeCell) {
+                    const routeText = routeCell.textContent.toUpperCase();
+                    
+                    // Logic: Match if source is found AND destination is found in the route string
+                    if (routeText.includes(source) && routeText.includes(dest)) {
+                        tr[i].style.display = "";
+                        countVisible++;
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+
+            // Show "No Results" message if no rows are visible
+            noResults.style.display = countVisible > 0 ? "none" : "block";
+        }
+    </script>
+</body>
+</html>
